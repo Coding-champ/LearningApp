@@ -7,7 +7,8 @@ const ManualQuizCreator = ({
   onCancel, 
   availableTags = [],
   onTagAdded,
-  existingQuiz = []
+  existingQuiz = [],
+  selectedCategory = 'Allgemein'
 }) => {
   const [currentQuestion, setCurrentQuestion] = useState({
     question: '',
@@ -68,6 +69,8 @@ const ManualQuizCreator = ({
       question: currentQuestion.question.trim(),
       options: currentQuestion.options.map(opt => opt.trim()).filter(opt => opt),
       createdBy: 'manual',
+      createdAt: new Date(),
+      category: selectedCategory,
       id: Date.now().toString()
     };
 
