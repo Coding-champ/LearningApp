@@ -5,6 +5,7 @@ import { generateContentWithAI } from './utils/generateContentWithAI';
 import ContentTypeSelector from './components/ContentTypeSelector';
 import ManualCardCreator from './components/ManualCardCreator';
 import ManualQuizCreator from './components/ManualQuizCreator';
+import TagManager from './components/TagManager';
 
 const StudyApp = () => {
   const [currentView, setCurrentView] = useState('upload');
@@ -195,6 +196,39 @@ const StudyApp = () => {
       return true;
     }
     return false;
+  };
+
+  const removeTag = (tagName) => {
+    setGlobalTags(prev => prev.filter(tag => tag !== tagName));
+    
+    // Also remove the tag from all existing flashcards and quiz questions
+    setFlashcards(prev => prev.map(card => ({
+      ...card,
+      tags: card.tags ? card.tags.filter(tag => tag !== tagName) : []
+    })));
+    
+    setQuizQuestions(prev => prev.map(question => ({
+      ...question,
+      tags: question.tags ? question.tags.filter(tag => tag !== tagName) : []
+    })));
+  };
+
+  const renameTag = (oldTagName, newTagName) => {
+    const trimmedNewTag = newTagName.trim().toLowerCase();
+    if (trimmedNewTag && !globalTags.includes(trimmedNewTag)) {
+      setGlobalTags(prev => prev.map(tag => tag === oldTagName ? trimmedNewTag : tag));
+      
+      // Also rename the tag in all existing flashcards and quiz questions
+      setFlashcards(prev => prev.map(card => ({
+        ...card,
+        tags: card.tags ? card.tags.map(tag => tag === oldTagName ? trimmedNewTag : tag) : []
+      })));
+      
+      setQuizQuestions(prev => prev.map(question => ({
+        ...question,
+        tags: question.tags ? question.tags.map(tag => tag === oldTagName ? trimmedNewTag : tag) : []
+      })));
+    }
   };
 
   const extractTagsFromContent = (content) => {
@@ -438,7 +472,9 @@ const StudyApp = () => {
             ...card,
             tags: autoTags,
             createdBy: 'ai',
-            difficulty: 1
+            createdAt: new Date(),
+            difficulty: 1,
+            category: selectedCategory
           }));
 
           // Enhance quiz questions with metadata  
@@ -446,7 +482,9 @@ const StudyApp = () => {
             ...question,
             tags: autoTags,
             createdBy: 'ai',
-            difficulty: 1
+            createdAt: new Date(),
+            difficulty: 1,
+            category: selectedCategory
           }));
 
           // Update global tags
@@ -491,7 +529,9 @@ const StudyApp = () => {
             ...card,
             tags: autoTags,
             createdBy: 'ai',
-            difficulty: 1
+            createdAt: new Date(),
+            difficulty: 1,
+            category: selectedCategory
           }));
 
           // Enhance quiz questions with metadata  
@@ -499,7 +539,9 @@ const StudyApp = () => {
             ...question,
             tags: autoTags,
             createdBy: 'ai',
-            difficulty: 1
+            createdAt: new Date(),
+            difficulty: 1,
+            category: selectedCategory
           }));
 
           // Update global tags
@@ -782,6 +824,17 @@ const StudyApp = () => {
             </div>
           )}
 
+          {/* Tag Management Section */}
+          <div className="mt-6">
+            <TagManager
+              tags={globalTags}
+              onTagAdded={addTag}
+              onTagRemoved={removeTag}
+              onTagRenamed={renameTag}
+              className="mb-4"
+            />
+          </div>
+
           <div className="flex gap-4">
             <div className="flex-1">
               <input
@@ -958,6 +1011,72 @@ const StudyApp = () => {
           </div>
         </div>
 
+        {/* Enhanced Metadata Display */}
+        {flashcards[currentCardIndex] && (
+          <div className="bg-gray-50 rounded-xl p-4 mb-6">
+            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+              {flashcards[currentCardIndex].tags && flashcards[currentCardIndex].tags.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <Tag className="w-4 h-4" />
+                  <div className="flex gap-1 flex-wrap">
+                    {flashcards[currentCardIndex].tags.map((tag, index) => (
+                      <span key={index} className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1">
+                  <span>Schwierigkeit:</span>
+                  <div className="flex">
+                    {[1, 2, 3, 4, 5].map(level => (
+                      <span 
+                        key={level}
+                        className={`w-2 h-2 rounded-full mr-1 ${
+                          level <= (flashcards[currentCardIndex].difficulty || 1) 
+                            ? 'bg-yellow-400' 
+                            : 'bg-gray-200'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-1">
+                  <Calendar className="w-4 h-4" />
+                  <span>
+                    {flashcards[currentCardIndex].createdAt ? 
+                      new Date(flashcards[currentCardIndex].createdAt).toLocaleDateString() : 
+                      'Unbekannt'
+                    }
+                  </span>
+                </div>
+                
+                <div className="flex items-center gap-1">
+                  <span className={`px-2 py-1 rounded-full text-xs ${
+                    flashcards[currentCardIndex].createdBy === 'ai' 
+                      ? 'bg-purple-100 text-purple-800' 
+                      : 'bg-green-100 text-green-800'
+                  }`}>
+                    {flashcards[currentCardIndex].createdBy === 'ai' ? 'KI-erstellt' : 'Manuell'}
+                  </span>
+                </div>
+
+                {flashcards[currentCardIndex].category && (
+                  <div className="flex items-center gap-1">
+                    <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs">
+                      {flashcards[currentCardIndex].category}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="flex justify-between items-center">
           <button
             onClick={prevCard}
@@ -1085,6 +1204,56 @@ const StudyApp = () => {
                 </button>
               ))}
             </div>
+
+            {/* Enhanced Metadata Display */}
+            {currentQuestion && (
+              <div className="mt-6 bg-gray-50 rounded-xl p-4">
+                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                  {currentQuestion.tags && currentQuestion.tags.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <Tag className="w-4 h-4" />
+                      <div className="flex gap-1 flex-wrap">
+                        {currentQuestion.tags.map((tag, index) => (
+                          <span key={index} className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-4 h-4" />
+                      <span>
+                        {currentQuestion.createdAt ? 
+                          new Date(currentQuestion.createdAt).toLocaleDateString() : 
+                          'Unbekannt'
+                        }
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center gap-1">
+                      <span className={`px-2 py-1 rounded-full text-xs ${
+                        currentQuestion.createdBy === 'ai' 
+                          ? 'bg-purple-100 text-purple-800' 
+                          : 'bg-green-100 text-green-800'
+                      }`}>
+                        {currentQuestion.createdBy === 'ai' ? 'KI-erstellt' : 'Manuell'}
+                      </span>
+                    </div>
+
+                    {currentQuestion.category && (
+                      <div className="flex items-center gap-1">
+                        <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs">
+                          {currentQuestion.category}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-between items-center">
@@ -1587,6 +1756,7 @@ const StudyApp = () => {
       availableTags={globalTags}
       onTagAdded={addTag}
       existingCards={flashcards}
+      selectedCategory={selectedCategory}
     />
   );
 
@@ -1603,6 +1773,7 @@ const StudyApp = () => {
       availableTags={globalTags}
       onTagAdded={addTag}
       existingQuiz={quizQuestions}
+      selectedCategory={selectedCategory}
     />
   );
 

@@ -7,7 +7,8 @@ const ManualCardCreator = ({
   onCancel, 
   availableTags = [],
   onTagAdded,
-  existingCards = []
+  existingCards = [],
+  selectedCategory = 'Allgemein'
 }) => {
   const [currentCard, setCurrentCard] = useState({
     question: '',
@@ -49,6 +50,8 @@ const ManualCardCreator = ({
       question: currentCard.question.trim(),
       answer: currentCard.answer.trim(),
       createdBy: 'manual',
+      createdAt: new Date(),
+      category: selectedCategory,
       id: Date.now().toString()
     };
 
