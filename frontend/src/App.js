@@ -282,6 +282,46 @@ const StudyApp = () => {
           className="mb-8"
         />
 
+        {/* Category Selection */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Kategorie auswählen:</label>
+          <div className="flex gap-2 items-center">
+            <select
+              value={cardSets.selectedCategory}
+              onChange={(e) => cardSets.setSelectedCategory(e.target.value)}
+              className="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            >
+              {cardSets.categories.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+            <button
+              onClick={() => setShowCategoryInput(!showCategoryInput)}
+              className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+          </div>
+          {showCategoryInput && (
+            <div className="flex gap-2 mt-2">
+              <input
+                type="text"
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                placeholder="Neue Kategorie"
+                className="flex-1 p-2 border border-gray-300 rounded-lg"
+                onKeyPress={(e) => e.key === 'Enter' && addCategory()}
+              />
+              <button
+                onClick={addCategory}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+              >
+                Hinzufügen
+              </button>
+            </div>
+          )}
+        </div>
+
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-3">Erstellungsmodus:</label>
           <div className="flex gap-4">
