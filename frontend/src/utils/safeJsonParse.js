@@ -10,7 +10,7 @@ export function safeJsonParse(aiText) {
     return JSON.parse(cleaned);
   } catch (e1) {
     cleaned = cleaned
-      .replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
+      .replace(/[\u0000-\u001F\u007F-\u009F]/g, '') // eslint-disable-line no-control-regex
       .replace(/'/g, '"');
     try {
       return JSON.parse(cleaned);
