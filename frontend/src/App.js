@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Upload, BookOpen, Brain, RotateCcw, Check, X, FileText, Award, Plus, Download, Upload as UploadIcon, BarChart3, Calendar, Tag, Trash2, Edit, Settings } from 'lucide-react';
+import React, { useState } from 'react';
+import { Upload, BookOpen, Brain, RotateCcw, Check, X, FileText, Award, Plus, Download, Upload as UploadIcon, BarChart3, Calendar, Tag, Trash2, Edit } from 'lucide-react';
 import { extractTextFromPDF } from './utils/pdfToText';
 import { generateContentWithAI } from './utils/generateContentWithAI';
+import ContentTypeSelector from './components/ContentTypeSelector';
+import ManualCardCreator from './components/ManualCardCreator';
+import ManualQuizCreator from './components/ManualQuizCreator';
 
 const StudyApp = () => {
   const [currentView, setCurrentView] = useState('upload');
@@ -34,6 +37,11 @@ const StudyApp = () => {
     averageScore: 0,
     studyStreak: 0
   });
+
+  // Enhanced card creation system state
+  const [globalTags, setGlobalTags] = useState([]); // All available tags
+  const [creationMode, setCreationMode] = useState('auto'); // 'manual' | 'auto'
+  const [contentTypeSelection, setContentTypeSelection] = useState('both'); // 'flashcards' | 'quiz' | 'both'
 
   // Quiz-spezifische Spaced Repetition
   const getQuestionDifficulty = (questionId) => {
@@ -121,10 +129,6 @@ const StudyApp = () => {
     return availableQuestions.slice(0, maxQuestions);
   };
 
-  const getCardDifficulty = (cardId) => {
-    return cardProgress[cardId]?.difficulty || 1;
-  };
-
   const updateCardProgress = (cardId, wasCorrect) => {
     const currentProgress = cardProgress[cardId] || {
       difficulty: 1,
@@ -181,6 +185,72 @@ const StudyApp = () => {
     if (selectedCategory === categoryToDelete) {
       setSelectedCategory('Allgemein');
     }
+  };
+
+  // Tag Management Functions
+  const addTag = (tagName) => {
+    const trimmedTag = tagName.trim().toLowerCase();
+    if (trimmedTag && !globalTags.includes(trimmedTag)) {
+      setGlobalTags(prev => [...prev, trimmedTag]);
+      return true;
+    }
+    return false;
+  };
+
+  const extractTagsFromContent = (content) => {
+    // Simple tag extraction - look for common academic topics
+    const commonTopics = [
+      'math', 'science', 'history', 'literature', 'biology', 'chemistry', 
+      'physics', 'geography', 'psychology', 'philosophy', 'economics',
+      'computer science', 'programming', 'languages', 'art', 'music'
+    ];
+    
+    const contentLower = content.toLowerCase();
+    const extractedTags = commonTopics.filter(topic => 
+      contentLower.includes(topic)
+    );
+    
+    return extractedTags;
+  };
+
+  // Manual Content Creation Functions
+  const handleManualCardsCreated = (cards) => {
+    setFlashcards(prev => [...prev, ...cards]);
+    
+    // Extract and add tags from new cards
+    cards.forEach(card => {
+      if (card.tags) {
+        card.tags.forEach(tag => addTag(tag));
+      }
+    });
+    
+    if (contentTypeSelection === 'flashcards') {
+      // Only creating flashcards, save immediately
+      const title = `Manuelle Karten ${new Date().toLocaleDateString()}`;
+      saveCurrentSet(title, selectedCategory);
+      setCurrentView('overview');
+    } else if (contentTypeSelection === 'both') {
+      // Creating both, move to quiz creation
+      setCurrentView('manual-quiz-creation');
+    } else {
+      // This shouldn't happen when creating cards, but handle it
+      setCurrentView('upload');
+    }
+  };
+
+  const handleManualQuizCreated = (questions) => {
+    setQuizQuestions(prev => [...prev, ...questions]);
+    
+    // Extract and add tags from new questions
+    questions.forEach(question => {
+      if (question.tags) {
+        question.tags.forEach(tag => addTag(tag));
+      }
+    });
+    
+    const title = `Manueller Inhalt ${new Date().toLocaleDateString()}`;
+    saveCurrentSet(title, selectedCategory);
+    setCurrentView('overview');
   };
 
   // Karteikarten-Sets Management
@@ -346,47 +416,6 @@ const StudyApp = () => {
     }));
   };
 
-  const generateDemoContent = (text) => {
-    const demoFlashcards = [
-      {
-        question: "Was ist Photosynthese?",
-        answer: "Ein biologischer Prozess, bei dem Pflanzen Lichtenergie in chemische Energie umwandeln und dabei Sauerstoff produzieren."
-      },
-      {
-        question: "Welche Rolle spielt Chlorophyll?",
-        answer: "Chlorophyll ist das grüne Pigment in Pflanzen, das Lichtenergie für die Photosynthese absorbiert."
-      },
-      {
-        question: "Was sind die Produkte der Photosynthese?",
-        answer: "Glucose (Zucker) und Sauerstoff sind die Hauptprodukte der Photosynthese."
-      },
-      {
-        question: "Wo findet Photosynthese statt?",
-        answer: "Photosynthese findet hauptsächlich in den Chloroplasten der Pflanzenzellen statt."
-      }
-    ];
-
-    const demoQuiz = [
-      {
-        question: "Was wird bei der Photosynthese produziert?",
-        options: ["Kohlendioxid", "Sauerstoff und Glucose", "Nur Wasser", "Stickstoff"],
-        correct: 1
-      },
-      {
-        question: "Welches Pigment ist für die Photosynthese essentiell?",
-        options: ["Hämoglobin", "Melanin", "Chlorophyll", "Carotin"],
-        correct: 2
-      },
-      {
-        question: "In welchen Zellorganellen findet Photosynthese statt?",
-        options: ["Mitochondrien", "Chloroplasten", "Ribosomen", "Zellkern"],
-        correct: 1
-      }
-    ];
-
-    return { flashcards: demoFlashcards, quiz: demoQuiz };
-  };
-
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -398,15 +427,53 @@ const StudyApp = () => {
       }
       setUploadedContent(content);
 
-      // KI-API-Call:
-      try {
-        // Optional: Lade-Indikator setzen
-        const { flashcards, quiz } = await generateContentWithAI(content);
-        setFlashcards(flashcards);
-        setQuizQuestions(quiz);
-        setCurrentView('overview');
-      } catch (err) {
-        alert('Fehler bei der KI-Auswertung! ' + (err.message || err));
+      if (creationMode === 'auto') {
+        // KI-API-Call:
+        try {
+          const { flashcards, quiz } = await generateContentWithAI(content);
+          const autoTags = extractTagsFromContent(content);
+          
+          // Enhance flashcards with metadata
+          const enhancedFlashcards = flashcards.map(card => ({
+            ...card,
+            tags: autoTags,
+            createdBy: 'ai',
+            difficulty: 1
+          }));
+
+          // Enhance quiz questions with metadata  
+          const enhancedQuiz = quiz.map(question => ({
+            ...question,
+            tags: autoTags,
+            createdBy: 'ai',
+            difficulty: 1
+          }));
+
+          // Update global tags
+          autoTags.forEach(tag => addTag(tag));
+
+          // Set content based on selection
+          if (contentTypeSelection === 'both' || contentTypeSelection === 'flashcards') {
+            setFlashcards(enhancedFlashcards);
+          } else {
+            setFlashcards([]);
+          }
+
+          if (contentTypeSelection === 'both' || contentTypeSelection === 'quiz') {
+            setQuizQuestions(enhancedQuiz);
+          } else {
+            setQuizQuestions([]);
+          }
+
+          const title = `Lernset ${new Date().toLocaleDateString()}`;
+          saveCurrentSet(title, selectedCategory);
+          setCurrentView('overview');
+        } catch (err) {
+          alert('Fehler bei der KI-Auswertung! ' + (err.message || err));
+        }
+      } else {
+        // Manual mode - navigate to manual creation interface
+        setCurrentView('manual-creation');
       }
     }
   };
@@ -414,9 +481,48 @@ const StudyApp = () => {
   const handleTextUpload = async () => {
     if (uploadedContent.trim()) {
       try {
-        const { flashcards, quiz } = await generateContentWithAI(uploadedContent);
-        setFlashcards(flashcards);
-        setQuizQuestions(quiz);
+        if (creationMode === 'auto') {
+          // AI-generated content
+          const { flashcards, quiz } = await generateContentWithAI(uploadedContent);
+          const autoTags = extractTagsFromContent(uploadedContent);
+          
+          // Enhance flashcards with metadata
+          const enhancedFlashcards = flashcards.map(card => ({
+            ...card,
+            tags: autoTags,
+            createdBy: 'ai',
+            difficulty: 1
+          }));
+
+          // Enhance quiz questions with metadata  
+          const enhancedQuiz = quiz.map(question => ({
+            ...question,
+            tags: autoTags,
+            createdBy: 'ai',
+            difficulty: 1
+          }));
+
+          // Update global tags
+          autoTags.forEach(tag => addTag(tag));
+
+          // Set content based on selection
+          if (contentTypeSelection === 'both' || contentTypeSelection === 'flashcards') {
+            setFlashcards(enhancedFlashcards);
+          } else {
+            setFlashcards([]);
+          }
+
+          if (contentTypeSelection === 'both' || contentTypeSelection === 'quiz') {
+            setQuizQuestions(enhancedQuiz);
+          } else {
+            setQuizQuestions([]);
+          }
+        } else {
+          // Manual mode - navigate to manual creation interface
+          setCurrentView('manual-creation');
+          return;
+        }
+        
         const title = `Lernset ${new Date().toLocaleDateString()}`;
         saveCurrentSet(title, selectedCategory);
         setCurrentView('overview');
@@ -584,34 +690,97 @@ const StudyApp = () => {
             )}
           </div>
 
-          <div className="border-2 border-dashed border-blue-300 rounded-xl p-8 hover:border-blue-500 transition-colors">
-            <Upload className="w-12 h-12 text-blue-500 mx-auto mb-4" />
-            <p className="text-gray-700 mb-4">Datei hochladen (Text oder PDF)</p>
-            <input
-              type="file"
-              accept=".txt,.pdf"
-              onChange={handleFileUpload}
-              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-            />
+          {/* Creation Mode Selection */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-3">Erstellungsmodus:</label>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setCreationMode('auto')}
+                className={`flex-1 p-4 rounded-xl border-2 transition-all ${
+                  creationMode === 'auto' 
+                    ? 'border-blue-500 bg-blue-50' 
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <Brain className="w-8 h-8 mx-auto mb-2 text-blue-600" />
+                <div className="text-center">
+                  <div className="font-semibold">Automatisch</div>
+                  <div className="text-sm text-gray-600">KI erstellt Inhalte</div>
+                </div>
+              </button>
+              <button
+                onClick={() => setCreationMode('manual')}
+                className={`flex-1 p-4 rounded-xl border-2 transition-all ${
+                  creationMode === 'manual' 
+                    ? 'border-blue-500 bg-blue-50' 
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <Edit className="w-8 h-8 mx-auto mb-2 text-blue-600" />
+                <div className="text-center">
+                  <div className="font-semibold">Manuell</div>
+                  <div className="text-sm text-gray-600">Selbst erstellen</div>
+                </div>
+              </button>
+            </div>
           </div>
 
-          <div className="text-gray-500">oder</div>
+          {/* Content Type Selection */}
+          <ContentTypeSelector
+            selectedType={contentTypeSelection}
+            onTypeChange={setContentTypeSelection}
+            className="mb-4"
+          />
 
-          <div className="space-y-4">
-            <textarea
-              value={uploadedContent}
-              onChange={(e) => setUploadedContent(e.target.value)}
-              placeholder="Füge hier deinen Text ein..."
-              className="w-full h-32 p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-            />
-            <button
-              onClick={handleTextUpload}
-              disabled={!uploadedContent.trim()}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
-              Karteikarten erstellen
-            </button>
-          </div>
+          {/* File Upload or Manual Creation */}
+          {creationMode === 'auto' && (
+            <>
+              <div className="border-2 border-dashed border-blue-300 rounded-xl p-8 hover:border-blue-500 transition-colors">
+                <Upload className="w-12 h-12 text-blue-500 mx-auto mb-4" />
+                <p className="text-gray-700 mb-4">Datei hochladen (Text oder PDF)</p>
+                <input
+                  type="file"
+                  accept=".txt,.pdf"
+                  onChange={handleFileUpload}
+                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                />
+              </div>
+
+              <div className="text-gray-500">oder</div>
+
+              <div className="space-y-4">
+                <textarea
+                  value={uploadedContent}
+                  onChange={(e) => setUploadedContent(e.target.value)}
+                  className="w-full h-32 p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  placeholder="Füge hier deinen Text ein..."
+                />
+                <button
+                  onClick={handleTextUpload}
+                  disabled={!uploadedContent.trim()}
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  Mit KI erstellen
+                </button>
+              </div>
+            </>
+          )}
+
+          {creationMode === 'manual' && (
+            <div className="space-y-4">
+              <div className="bg-gradient-to-br from-green-100 to-blue-100 rounded-xl p-6 text-center">
+                <Edit className="w-16 h-16 text-blue-600 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-gray-800 mb-2">Manueller Modus</h3>
+                <p className="text-gray-600 mb-4">Erstellen Sie Ihre eigenen Lernkarten und Quizfragen</p>
+                <button
+                  onClick={() => setCurrentView('manual-creation')}
+                  className="bg-gradient-to-r from-green-600 to-blue-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-green-700 hover:to-blue-700 transition-all"
+                >
+                  Manuell erstellen
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="flex gap-4">
             <div className="flex-1">
@@ -1358,6 +1527,85 @@ const StudyApp = () => {
     </div>
   );
 
+  // Manual Creation Views
+  const renderManualCreation = () => (
+    <div className="max-w-4xl mx-auto">
+      <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">Was möchten Sie erstellen?</h2>
+        <p className="text-gray-600 mb-6">Wählen Sie aus, welchen Inhaltstyp Sie manuell erstellen möchten.</p>
+        
+        <div className="grid md:grid-cols-2 gap-6">
+          <button
+            onClick={() => {
+              if (contentTypeSelection === 'flashcards' || contentTypeSelection === 'both') {
+                setCurrentView('manual-card-creation');
+              } else {
+                setCurrentView('manual-quiz-creation');
+              }
+            }}
+            disabled={contentTypeSelection === 'quiz'}
+            className="p-6 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <BookOpen className="w-12 h-12 mx-auto mb-4" />
+            <h3 className="text-xl font-bold mb-2">Karteikarten erstellen</h3>
+            <p className="text-blue-100">Erstellen Sie individuelle Lernkarten</p>
+          </button>
+          
+          <button
+            onClick={() => {
+              if (contentTypeSelection === 'quiz' || contentTypeSelection === 'both') {
+                setCurrentView('manual-quiz-creation');
+              } else {
+                setCurrentView('manual-card-creation');
+              }
+            }}
+            disabled={contentTypeSelection === 'flashcards'}
+            className="p-6 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Brain className="w-12 h-12 mx-auto mb-4" />
+            <h3 className="text-xl font-bold mb-2">Quiz erstellen</h3>
+            <p className="text-green-100">Erstellen Sie Multiple-Choice-Fragen</p>
+          </button>
+        </div>
+        
+        <div className="flex justify-center mt-6">
+          <button
+            onClick={() => setCurrentView('upload')}
+            className="text-gray-600 hover:text-gray-800 font-medium"
+          >
+            Zurück zur Upload-Ansicht
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderManualCardCreation = () => (
+    <ManualCardCreator
+      onCardsCreated={handleManualCardsCreated}
+      onCancel={() => setCurrentView('manual-creation')}
+      availableTags={globalTags}
+      onTagAdded={addTag}
+      existingCards={flashcards}
+    />
+  );
+
+  const renderManualQuizCreation = () => (
+    <ManualQuizCreator
+      onQuizCreated={handleManualQuizCreated}
+      onCancel={() => {
+        if (contentTypeSelection === 'both' && flashcards.length > 0) {
+          setCurrentView('manual-creation');
+        } else {
+          setCurrentView('upload');
+        }
+      }}
+      availableTags={globalTags}
+      onTagAdded={addTag}
+      existingQuiz={quizQuestions}
+    />
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100 py-8 px-4">
       {currentView === 'upload' && renderUploadView()}
@@ -1368,6 +1616,9 @@ const StudyApp = () => {
       {currentView === 'quiz-selection' && renderQuizSelection()}
       {currentView === 'quiz' && renderQuiz()}
       {currentView === 'quiz-results' && renderQuizResults()}
+      {currentView === 'manual-creation' && renderManualCreation()}
+      {currentView === 'manual-card-creation' && renderManualCardCreation()}
+      {currentView === 'manual-quiz-creation' && renderManualQuizCreation()}
     </div>
   );
 };
