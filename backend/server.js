@@ -21,7 +21,7 @@ app.post('/api/generate-content', async (req, res) => {
         messages: [
           {
             role: "system",
-            content: "Extrahiere aus folgendem Uni-Text sinnvolle Karteikarten (Frage+Antwort) und Multiple-Choice-Quizfragen mit je 4 Antwortmöglichkeiten, davon eine korrekt. Antworte als JSON: {flashcards:[{question, answer}], quiz:[{question, options, correct}]}"
+            content: "Extrahiere aus folgendem Uni-Text sinnvolle Karteikarten (Frage+Antwort) und Multiple-Choice-Quizfragen mit je 4 Antwortmöglichkeiten, davon eine korrekt. Füge auch relevante Tags für jeden Inhalt hinzu. Antworte als JSON: {flashcards:[{question, answer, tags, difficulty}], quiz:[{question, options, correct, tags, difficulty}]}. Tags sollen als Array von Strings formatiert sein und relevante Themen/Kategorien widerspiegeln."
           },
           { role: "user", content: text }
         ]
