@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Card Creation - Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg { background: linear-gradient(to bottom right, #dbeafe, #f3e8ff, #fce7f3); }
+        .card-shadow { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen py-8 px-4">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-2xl card-shadow p-8">
+            <div class="flex justify-between items-center mb-6">
+                <div class="flex items-center gap-3">
+                    <div class="bg-gradient-to-br from-blue-500 to-blue-600 w-12 h-12 rounded-full flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">Karteikarten erstellen</h2>
+                        <p class="text-sm text-gray-600">Erstellen Sie individuelle Lernkarten mit Tags und Schwierigkeitsgrad</p>
+                    </div>
+                </div>
+                <button class="text-gray-600 hover:text-gray-800 font-medium">
+                    <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    Abbrechen
+                </button>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-8">
+                <!-- Card Creation Form -->
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Frage</label>
+                        <textarea 
+                            placeholder="Was ist Photosynthese?"
+                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none h-24"
+                        >Was ist Photosynthese?</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Antwort</label>
+                        <textarea 
+                            placeholder="Die Antwort..."
+                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none h-24"
+                        >Photosynthese ist der biologische Prozess, bei dem Pflanzen Lichtenergie nutzen, um aus Kohlendioxid und Wasser Glukose und Sauerstoff zu produzieren.</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Schwierigkeitsgrad</label>
+                        <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="1">Einfach</option>
+                            <option value="2" selected>Mittel</option>
+                            <option value="3">Schwer</option>
+                        </select>
+                    </div>
+
+                    <!-- Tag Input Component -->
+                    <div class="space-y-3">
+                        <label class="block text-sm font-medium text-gray-700">Tags für diese Karte</label>
+                        
+                        <!-- Selected Tags Display -->
+                        <div class="flex gap-2 flex-wrap">
+                            <div class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2.002 2.002 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                </svg>
+                                biologie
+                                <button class="text-blue-600 hover:text-blue-800 ml-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2.002 2.002 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                </svg>
+                                photosynthese
+                                <button class="text-blue-600 hover:text-blue-800 ml-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Input Field with Suggestions -->
+                        <div class="relative">
+                            <div class="flex items-center">
+                                <input
+                                    type="text"
+                                    placeholder="Tag hinzufügen..."
+                                    value="pflanzen"
+                                    class="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                />
+                                <button class="ml-2 bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <!-- Suggestions Dropdown -->
+                            <div class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
+                                <button class="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center gap-2">
+                                    <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2.002 2.002 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                    </svg>
+                                    pflanzen
+                                </button>
+                                <button class="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center gap-2">
+                                    <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2.002 2.002 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                    </svg>
+                                    physik
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-xl font-semibold flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Karte hinzufügen
+                    </button>
+                </div>
+
+                <!-- Created Cards Preview -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Erstellte Karten (2)
+                    </h3>
+
+                    <!-- Card 1 -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="flex-1">
+                                <div class="font-medium text-gray-800 mb-1">Was sind Chloroplasten?</div>
+                                <div class="text-sm text-gray-600 mb-2">Die Organellen in Pflanzenzellen, die für die Photosynthese verantwortlich sind...</div>
+                                <div class="flex gap-1 flex-wrap mb-2">
+                                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">biologie</span>
+                                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">zellen</span>
+                                </div>
+                                <div class="flex items-center gap-2 text-xs text-gray-500">
+                                    <span>Schwierigkeit: Mittel</span>
+                                    <span>•</span>
+                                    <span>Manuell erstellt</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-2 ml-4">
+                                <button class="text-blue-600 hover:text-blue-800 p-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                                    </svg>
+                                </button>
+                                <button class="text-red-600 hover:text-red-800 p-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 2 (Current Card Being Created) -->
+                    <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="flex-1">
+                                <div class="font-medium text-gray-800 mb-1">Was ist Photosynthese?</div>
+                                <div class="text-sm text-gray-600 mb-2">Photosynthese ist der biologische Prozess, bei dem Pflanzen Lichtenergie nutzen...</div>
+                                <div class="flex gap-1 flex-wrap mb-2">
+                                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">biologie</span>
+                                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">photosynthese</span>
+                                </div>
+                                <div class="flex items-center gap-2 text-xs text-gray-500">
+                                    <span>Schwierigkeit: Mittel</span>
+                                    <span>•</span>
+                                    <span>In Bearbeitung</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 pt-4">
+                        <button class="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-xl font-semibold flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
+                            </svg>
+                            Karten speichern
+                        </button>
+                        <button class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50">
+                            Weiter zu Quiz
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
